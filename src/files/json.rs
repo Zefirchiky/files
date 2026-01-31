@@ -53,8 +53,8 @@ impl FileTrait for Json {
             .expect("Failed to write initial JSON content");
     }
 
-    fn ext() -> &'static str {
-        "json"
+    fn ext() -> &'static [&'static str] {
+        &["json"]
     }
 }
 

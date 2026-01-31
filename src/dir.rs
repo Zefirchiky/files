@@ -10,9 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{File, FileTrait, FileTypes, FsHandler};
 
-#[derive(
-    Debug, Default, From, IntoIterator, AsRef, AsMut, Deref, DerefMut,
-)]
+#[derive(Debug, Default, From, IntoIterator, AsRef, AsMut, Deref, DerefMut)]
 #[from(forward)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Dir {

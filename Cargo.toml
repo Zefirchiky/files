@@ -8,12 +8,13 @@ derive_more = { version = "2.0.1", features = ["from", "deref", "deref_mut", "de
 image = { version = "0.25.9", optional = true }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
-serde_toml = { version = "0.0.1", optional = true }
+serde_toml = { package = "toml", version = "0.9.11", optional = true, features = ["fast_hash"] }
+serde_path_to_error = "0.1.20"
 thiserror = "2.0.17"
 
 [features]
-default = []
-# default = ["serde"]
+# default = []
+default = ["serde", "image"]
 
 serde = ["dep:serde", "dep:serde_json", "dep:serde_toml"]
 image = ["dep:image"]

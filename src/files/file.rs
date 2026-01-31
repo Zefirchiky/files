@@ -1,4 +1,4 @@
-use std::{path::Path};
+use std::path::Path;
 
 use derive_more::{AsRef, Deref, DerefMut, From};
 #[cfg(feature = "serde")]
@@ -26,8 +26,8 @@ impl FileTrait for File {
             file: FileBase::new_with_handler::<Self>(file),
         }
     }
-    fn ext() -> &'static str {
-        ""
+    fn ext() -> &'static [&'static str] {
+        &[""]
     }
 }
 

@@ -33,17 +33,16 @@ impl FileBase {
             match file.extension() {
                 Some(ext) => {
                     let ext = ext.to_str().expect("Extension should be a valid UTF-8");
-                    assert_eq!(
-                        ext,
+                    assert!(
+                        H::ext().contains(&ext),
+                        "Extension must be one of `{:?}` for file {file:?}, given: `{ext}`",
                         H::ext(),
-                        "Extension must be `{}` for file {file:?}, given: `{ext}`",
-                        H::ext()
                     )
                 }
                 None => {
                     panic!(
-                        "Extension must be `{}` for file {file:?}, no extension given",
-                        H::ext()
+                        "Extension must be one of `{:?}` for file {file:?}, no extension given",
+                        H::ext(),
                     )
                 }
             }
@@ -85,9 +84,9 @@ pub trait FileTrait:
     + std::ops::Deref<Target = FileBase>
     + std::ops::DerefMut
 {
-    fn make_new(_file: impl AsRef<Path>) -> Self;
+    fn make_new(file: impl AsRef<Path>) -> Self;
     fn initialize_file(_file: &mut File) {}
-    fn ext() -> &'static str;
+    fn ext() -> &'static [&'static str];
 }
 
 #[derive(Debug, Clone, From, Deref, DerefMut)]

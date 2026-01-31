@@ -11,8 +11,10 @@ use crate::{ModelFileTrait, model_file::ModelIoError};
 #[derive(Debug, thiserror::Error)]
 pub enum ModelTomlIoError {
     #[cfg(feature = "serde")]
-    #[error("Seder Error: {0}")]
-    Serde(#[from] serde_toml::Error),
+    #[error("Seder Deserialization Error: {0}")]
+    SerdeDeserialization(#[from] serde_toml::de::Error),
+    #[error("Seder Serialization Error: {0}")]
+    SerdeSerialization(#[from] serde_toml::ser::Error),
     #[error("Io Error: {0}")]
     Io(#[from] std::io::Error),
 }
@@ -53,8 +55,8 @@ impl FileTrait for Toml {
             .expect("Failed to write initial Toml content");
     }
 
-    fn ext() -> &'static str {
-        "toml"
+    fn ext() -> &'static [&'static str] {
+        &["toml"]
     }
 }
 

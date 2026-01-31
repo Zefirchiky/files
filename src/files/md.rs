@@ -26,12 +26,10 @@ impl FileTrait for Md {
             file: FileBase::new_with_handler::<Self>(file),
         }
     }
-    
-    fn ext() -> &'static str {
-        "md"
-    }
 
-    fn initialize_file(_: &mut std::fs::File) {}
+    fn ext() -> &'static [&'static str] {
+        &["md"]
+    }
 }
 
 impl From<&str> for Md {

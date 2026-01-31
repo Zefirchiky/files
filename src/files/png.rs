@@ -1,31 +1,24 @@
-use std::path::Path;
-
 use derive_more::{AsRef, Deref, DerefMut, From};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
-use crate::{FileBase, FileTrait};
+use crate::{FileBase, FileTrait, ImageFileTrait};
 
 #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
-#[as_ref(forward)]
 #[from(forward)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Image {
+#[as_ref(forward)]
+pub struct Png {
     file: FileBase,
 }
 
-impl Image {
-    pub fn new(file: impl AsRef<Path>) -> Self {
+impl Png {
+    pub fn new(file: impl AsRef<std::path::Path>) -> Self {
         Self::make_new(file)
     }
 }
 
-impl FileTrait for Image {
+impl FileTrait for Png {
     fn ext() -> &'static [&'static str] {
-        &[""]
+        &["png"]
     }
-
-    fn initialize_file(_file: &mut std::fs::File) {}
 
     fn make_new(file: impl AsRef<std::path::Path>) -> Self {
         Self {
@@ -34,7 +27,10 @@ impl FileTrait for Image {
     }
 }
 
-impl From<&str> for Image {
+#[cfg(feature = "image")]
+impl ImageFileTrait for Png {}
+
+impl From<&str> for Png {
     fn from(value: &str) -> Self {
         Self::new(value)
     }
