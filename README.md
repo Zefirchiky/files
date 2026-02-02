@@ -21,5 +21,5 @@ file2.save_image(&image);                       // `Image` integration: save `Dy
 file2.save_image_custom(&image, 80);            // `Image` integration: save `DynamicImage` with custom quality parameters (only available if supports quality settings)
 ```
 
-> [!WARN]
+> [!NOTE]
 > In beta, adding new file formats is a bit bothersome
