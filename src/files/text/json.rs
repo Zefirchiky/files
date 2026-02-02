@@ -68,7 +68,7 @@ impl ModelFileTrait for Json {
     }
 
     fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error> {
-        self.save(serde_json::to_string_pretty(model)?)?;
+        self.save(&serde_json::to_string_pretty(model)?)?;
         Ok(())
     }
 }

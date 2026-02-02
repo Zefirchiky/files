@@ -32,7 +32,7 @@ pub trait ImageFileEncodingTrait: FileTrait {
     ) -> Result<(), ImageIoError> {
         let mut buf = vec![];
         img.write_with_encoder(Self::get_encoder_w_quality(&mut buf, quality))?;
-        self.save(buf)?;
+        self.save(&buf)?;
         Ok(())
     }
 }

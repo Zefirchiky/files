@@ -64,7 +64,7 @@ impl FileBase {
         Self { file }
     }
 
-    pub fn save(&self, data: impl AsRef<[u8]>) -> std::io::Result<()> {
+    pub fn save(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
         fs::write(&self.file, data).unwrap();
         Ok(())
     }

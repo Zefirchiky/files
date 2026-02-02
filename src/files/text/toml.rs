@@ -70,7 +70,7 @@ impl ModelFileTrait for Toml {
     }
 
     fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error> {
-        self.save(serde_toml::to_string_pretty(model)?)?;
+        self.save(&serde_toml::to_string_pretty(model)?)?;
         Ok(())
     }
 }
