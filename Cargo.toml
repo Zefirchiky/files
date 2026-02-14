@@ -15,8 +15,8 @@ serde_path_to_error = "0.1.20"
 thiserror = "2.0.17"
 
 [features]
-# default = []
-default = ["serde", "image"]
+default = []
+# default = ["serde", "image"]
 
 serde = ["dep:serde", "dep:serde_json", "dep:serde_toml"]
 image = ["dep:image"]
