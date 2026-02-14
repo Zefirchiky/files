@@ -13,6 +13,7 @@ pub enum ModelTomlIoError {
     #[cfg(feature = "serde")]
     #[error("Seder Deserialization Error: {0}")]
     SerdeDeserialization(#[from] serde_toml::de::Error),
+    #[cfg(feature = "serde")]
     #[error("Seder Serialization Error: {0}")]
     SerdeSerialization(#[from] serde_toml::ser::Error),
     #[error("Io Error: {0}")]
