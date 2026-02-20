@@ -11,7 +11,7 @@ Filess simplifies saving and loading of data, with `serde` and `image` optional 
 ```rust
 let file1: Json = Json::new("path");            // Create new Json file. Filess will ensure that it's a valid path
 let data: String = file1.load();                // Load data from a file as a String
-let model = file1.load_model::\<YourModel\>();  // `Serde` integration: load model from the file
+let model = file1.load_model::<YourModel>();  // `Serde` integration: load model from the file
 file1.save(&data);                              // Save anything with `impl AsRef<[u8]>`
 file1.save_model(&model);                       // `Serde` integration: save a model into file easily
 

@@ -30,7 +30,11 @@ impl FileTrait for Webp {
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Webp {}
+impl ImageFileTrait for Webp {
+    fn image_format() -> image::ImageFormat {
+        image::ImageFormat::WebP
+    }
+}
 
 impl From<&str> for Webp {
     fn from(value: &str) -> Self {

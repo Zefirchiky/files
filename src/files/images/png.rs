@@ -30,7 +30,11 @@ impl FileTrait for Png {
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Png {}
+impl ImageFileTrait for Png {
+    fn image_format() -> image::ImageFormat {
+        image::ImageFormat::Png
+    }
+}
 
 impl From<&str> for Png {
     fn from(value: &str) -> Self {

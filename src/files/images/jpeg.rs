@@ -30,7 +30,11 @@ impl FileTrait for Jpeg {
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Jpeg {}
+impl ImageFileTrait for Jpeg {
+    fn image_format() -> image::ImageFormat {
+        image::ImageFormat::Jpeg
+    }
+}
 
 #[cfg(feature = "image")]
 impl ImageFileEncodingTrait for Jpeg {
