@@ -1,22 +1,21 @@
 use std::{
-    fmt::Debug,
-    fs::{self, File, create_dir_all},
-    path::{Path, PathBuf},
+    fmt::Debug, fs::{self, create_dir_all}, marker::PhantomData, ops::{Deref, DerefMut}, path::{Path, PathBuf}
 };
 
 use derive_more::{AsRef, Deref, DerefMut, From};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Default, From, AsRef)]
-#[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-pub struct FileBase {
+#[derive(Debug, Clone, Default, AsRef, Deref, DerefMut)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct FileBase<F: FileTrait> {
     // TODO: With thousands of paths, central storage is preferable. Something like a mini filesystem. OPTIMIZATIONS BABE
-    pub file: PathBuf,
+    #[as_ref(forward)]
+    #[deref]
+    #[deref_mut]
+    pub path: PathBuf,
+    _phantom: PhantomData<F>,
 }
 
-impl FileBase {
+impl<F: FileTrait> FileBase<F> {
     /// Creates a new FileHandler.
     ///
     /// If the file does not exist, it will be created. If the parent directories do not exist, they will be created.
@@ -26,62 +25,114 @@ impl FileBase {
     /// # Panics
     ///
     /// Panics if the path is not a file or if the file does not have the correct extension.
-    pub fn new_with_handler<H: FileTrait>(file: impl AsRef<Path>) -> Self {
+    pub fn new(file: impl AsRef<Path>) -> Self {
         let file = file.as_ref().to_path_buf();
 
-        if !H::ext().is_empty() {
+        if !F::ext().is_empty() {
             match file.extension() {
                 Some(ext) => {
                     let ext = ext.to_str().expect("Extension should be a valid UTF-8");
                     assert!(
-                        H::ext().contains(&ext),
+                        F::ext().contains(&ext),
                         "Extension must be one of `{:?}` for file {file:?}, given: `{ext}`",
-                        H::ext(),
+                        F::ext(),
                     )
                 }
                 None => {
                     panic!(
                         "Extension must be one of `{:?}` for file {file:?}, no extension given",
-                        H::ext(),
+                        F::ext(),
                     )
                 }
             }
         }
 
-        if !file.exists() {
-            if let Some(parent) = file.parent() {
-                create_dir_all(parent).unwrap_or_else(|e| {
-                    panic!("Failed to create parent directories for {file:?}: {e}")
-                });
-            }
-
-            let mut f = File::create(&file)
-                .unwrap_or_else(|e| panic!("Failed to create file {file:?}: {e}"));
-
-            H::initialize_file(&mut f);
+        Self { path: file, _phantom: PhantomData }
+    }
+    
+    /// Creates a new file.
+    /// 
+    /// !!! OVERWRITES CONTENT IF FILE ALREADY EXISTS !!!
+    pub fn create(&self) -> std::io::Result<()> {
+        if let Some(parent) = self.path.parent() {
+            create_dir_all(parent)?
         }
+        
+        match F::file_init_bytes() {
+            Some(b) => fs::write(self, b)?,
+            None => { fs::File::create(self)?; },
+        };
+        
+        Ok(())
+    }
+    
+    #[cfg(feature = "async")]
+    pub async fn create_async(&self) -> std::io::Result<()> {
+        use tokio::fs;
 
-        Self { file }
+        if let Some(parent) = self.path.parent() {
+            fs::create_dir_all(parent).await?
+        }
+        
+        match F::file_init_bytes() {
+            Some(b) => fs::write(&self, b).await?,
+            None => { fs::File::create(&self).await?; }
+        }
+        
+        Ok(())
     }
 
     pub fn save(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
-        fs::write(&self.file, data)?;
+        if let Some(parent) = self.path.parent() {
+            create_dir_all(parent)?
+        }
+        fs::write(&self.path, data)?;
         Ok(())
     }
 
     #[cfg(feature = "async")]
     pub async fn save_async(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
-        async_fs::write(&self.file, data).await?;
+        use tokio::fs;
+        if let Some(parent) = self.path.parent() {
+            fs::create_dir_all(parent).await?
+        }
+        tokio::fs::write(&self.path, data).await?;
         Ok(())
     }
 
     pub fn load(&self) -> std::io::Result<Vec<u8>> {
-        fs::read(&self.file)
+        if !self.path.try_exists()? { self.create()?; }
+        fs::read(&self.path)
     }
 
     #[cfg(feature = "async")]
     pub async fn load_async(&self) -> std::io::Result<Vec<u8>> {
-        async_fs::read(&self.file).await
+        if !tokio::fs::try_exists(self).await? { self.create_async().await?; }
+        tokio::fs::read(&self.path).await
+    }
+}
+
+impl<H: FileTrait> From<&'static Path> for FileBase<H> {
+    fn from(path: &'static Path) -> Self {
+        Self::new(path)
+    }
+}
+
+impl<H: FileTrait> From<PathBuf> for FileBase<H> {
+    fn from(path: PathBuf) -> Self {
+        Self::new(path)
+    }
+}
+
+impl<H: FileTrait> From<&'static str> for FileBase<H> {
+    fn from(path: &'static str) -> Self {
+        Self::new(path)
+    }
+}
+
+impl<H: FileTrait> From<String> for FileBase<H> {
+    fn from(path: String) -> Self {
+        Self::new(path)
     }
 }
 
@@ -92,15 +143,14 @@ pub trait FileTrait:
     + From<PathBuf>
     + From<&'static str>
     + AsRef<Path>
-    + std::ops::Deref<Target = FileBase>
-    + std::ops::DerefMut
+    + Deref // Deref here is fine, as files should not have any more information and should not have any more function than wrapping FileBase
+    + DerefMut<Target = FileBase<Self>>
 {
-    fn make_new(file: impl AsRef<Path>) -> Self;
-    fn initialize_file(_file: &mut File) {}
+    fn file_init_bytes() -> Option<&'static [u8]> { None }
     fn ext() -> &'static [&'static str];
 }
 
-#[derive(Debug, Clone, From, Deref, DerefMut)]
+#[derive(Debug, Clone, From, AsRef, Deref, DerefMut)]
 pub struct Temporary<H: FileTrait> {
     inner: H,
 }
@@ -113,8 +163,8 @@ impl<H: FileTrait> Temporary<H> {
 
 impl<T: FileTrait> Drop for Temporary<T> {
     fn drop(&mut self) {
-        fs::remove_file(&self.file).unwrap();
-        for dir in self.file.parent().into_iter().rev() {
+        fs::remove_file(&self.inner).unwrap();
+        for dir in self.parent().into_iter().rev() {
             if fs::remove_dir(dir).is_err() {
                 break;
             }

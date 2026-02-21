@@ -1,5 +1,3 @@
-use std::{fs::File, io::Write, path::Path};
-
 use derive_more::{AsRef, Deref, DerefMut, From};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -28,7 +26,7 @@ impl ModelIoError for ModelTomlIoError {}
 #[as_ref(forward)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Toml {
-    handler: FileBase,
+    file: FileBase<Self>,
 }
 
 impl Toml {
@@ -39,23 +37,12 @@ impl Toml {
     /// # Panics
     ///
     /// Panics if the path exists but is not a file, or if the file does not have the correct extension.
-    pub fn new(file: impl AsRef<Path>) -> Self {
-        Self::make_new(file)
+    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+        Self { file: FileBase::new(path) }
     }
 }
 
 impl FileTrait for Toml {
-    fn make_new(file: impl AsRef<Path>) -> Self {
-        Self {
-            handler: FileBase::new_with_handler::<Self>(file),
-        }
-    }
-
-    fn initialize_file(file: &mut File) {
-        file.write_all(b"{}")
-            .expect("Failed to write initial Toml content");
-    }
-
     fn ext() -> &'static [&'static str] {
         &["toml"]
     }
@@ -71,11 +58,5 @@ impl ModelFile for Toml {
     
     fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error> {
         Ok(serde_toml::to_string_pretty(model)?.into())
-    }
-}
-
-impl From<&str> for Toml {
-    fn from(value: &str) -> Self {
-        Self::new(value)
     }
 }

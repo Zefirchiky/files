@@ -1,5 +1,3 @@
-use std::{fs::File, io::Write, path::Path};
-
 use derive_more::{AsRef, Deref, DerefMut, From};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -25,7 +23,7 @@ impl ModelIoError for ModelJsonIoError {}
 #[as_ref(forward)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Json {
-    handler: FileBase,
+    file: FileBase<Self>,
 }
 
 impl Json {
@@ -36,21 +34,14 @@ impl Json {
     /// # Panics
     ///
     /// Panics if the path exists but is not a file, or if the file does not have the correct extension.
-    pub fn new(file: impl AsRef<Path>) -> Self {
-        Self::make_new(file)
+    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+        Self { file: FileBase::new(path) }
     }
 }
 
 impl FileTrait for Json {
-    fn make_new(file: impl AsRef<Path>) -> Self {
-        Self {
-            handler: FileBase::new_with_handler::<Self>(file),
-        }
-    }
-
-    fn initialize_file(file: &mut File) {
-        file.write_all(b"{}")
-            .expect("Failed to write initial JSON content");
+    fn file_init_bytes() -> Option<&'static [u8]> {
+        Some(b"{}")
     }
 
     fn ext() -> &'static [&'static str] {
@@ -68,12 +59,6 @@ impl ModelFile for Json {
     
     fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error> {
         Ok(serde_json::to_vec_pretty(model)?)
-    }
-}
-
-impl From<&str> for Json {
-    fn from(value: &str) -> Self {
-        Self::new(value)
     }
 }
 

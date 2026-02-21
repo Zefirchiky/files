@@ -8,7 +8,7 @@ use derive_more::{AsMut, AsRef, Deref, DerefMut, From, IntoIterator};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{File, FileTrait, FileTypes, FsHandler};
+use crate::{File, FileTrait, FileType, FsHandler};
 
 #[derive(Debug, Default, From, IntoIterator, AsRef, AsMut, Deref, DerefMut)]
 #[from(forward)]
@@ -21,7 +21,7 @@ pub struct Dir {
     #[into_iterator(owned, ref, ref_mut)]
     #[from(skip)]
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub files: Vec<FileTypes>,
+    pub files: Vec<FileType>,
 }
 
 impl Dir {
@@ -36,7 +36,7 @@ impl Dir {
         let dir = dir.as_ref().to_path_buf();
 
         if dir.exists() {
-            assert!(dir.is_dir(), "{dir:?} is not a directory")
+            assert!(!dir.is_dir(), "{dir:?} is not a directory")
         } else {
             create_dir_all(&dir)
                 .unwrap_or_else(|e| panic!("Failed to create directories for {dir:?}: {e}"));
@@ -48,7 +48,7 @@ impl Dir {
         }
     }
 
-    pub fn add(&mut self, file: FileTypes) {
+    pub fn add(&mut self, file: FileType) {
         self.files.push(file)
     }
 }

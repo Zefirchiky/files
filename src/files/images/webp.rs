@@ -8,37 +8,25 @@ use crate::{FileBase, FileTrait};
 #[from(forward)]
 #[as_ref(forward)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Webp {
-    file: FileBase,
+pub struct WebP {
+    file: FileBase<Self>,
 }
 
-impl Webp {
-    pub fn new(file: impl AsRef<std::path::Path>) -> Self {
-        Self::make_new(file)
+impl WebP {
+    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+        Self { file: FileBase::new(path) }
     }
 }
 
-impl FileTrait for Webp {
+impl FileTrait for WebP {
     fn ext() -> &'static [&'static str] {
         &["webp"]
-    }
-
-    fn make_new(file: impl AsRef<std::path::Path>) -> Self {
-        Self {
-            file: FileBase::new_with_handler::<Self>(file),
-        }
     }
 }
 
 #[cfg(feature = "image")]
-impl ImageFile for Webp {
+impl ImageFile for WebP {
     fn image_format() -> image::ImageFormat {
         image::ImageFormat::WebP
-    }
-}
-
-impl From<&str> for Webp {
-    fn from(value: &str) -> Self {
-        Self::new(value)
     }
 }

@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use derive_more::{AsRef, Deref, DerefMut, From};
 
 use crate::{FileBase, FileTrait};
@@ -9,28 +7,17 @@ use crate::{FileBase, FileTrait};
 #[as_ref(forward)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct File {
-    file: FileBase,
+    file: FileBase<Self>,
 }
 
 impl File {
-    pub fn new(file: impl AsRef<Path>) -> Self {
-        Self::make_new(file)
+    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+        Self { file: FileBase::new(path) }
     }
 }
 
 impl FileTrait for File {
-    fn make_new(file: impl AsRef<Path>) -> Self {
-        Self {
-            file: FileBase::new_with_handler::<Self>(file),
-        }
-    }
     fn ext() -> &'static [&'static str] {
         &[""]
-    }
-}
-
-impl From<&str> for File {
-    fn from(value: &str) -> Self {
-        Self::new(value)
     }
 }

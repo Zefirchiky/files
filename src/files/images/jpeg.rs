@@ -11,24 +11,18 @@ use crate::{ImageFileEncodingAsync, ImageFileAsync};
 #[as_ref(forward)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Jpeg {
-    file: FileBase,
+    file: FileBase<Self>,
 }
 
 impl Jpeg {
-    pub fn new(file: impl AsRef<std::path::Path>) -> Self {
-        Self::make_new(file)
+    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+        Self { file: FileBase::new(path) }
     }
 }
 
 impl FileTrait for Jpeg {
     fn ext() -> &'static [&'static str] {
         &["jpeg"]
-    }
-
-    fn make_new(file: impl AsRef<std::path::Path>) -> Self {
-        Self {
-            file: FileBase::new_with_handler::<Self>(file),
-        }
     }
 }
 
@@ -54,9 +48,3 @@ impl ImageFileEncoding for Jpeg {
 
 #[cfg(all(feature = "image", feature = "async"))]
 impl ImageFileEncodingAsync for Jpeg {}
-
-impl From<&str> for Jpeg {
-    fn from(value: &str) -> Self {
-        Self::new(value)
-    }
-}
