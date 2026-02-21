@@ -2,11 +2,11 @@ use std::{fs::File, io::Write, path::Path};
 
 use derive_more::{AsRef, Deref, DerefMut, From};
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize};
 
 use crate::{FileBase, FileTrait};
 #[cfg(feature = "serde")]
-use crate::{ModelFileTrait, model_file::ModelIoError};
+use crate::{ModelFile, model_file::ModelIoError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ModelJsonIoError {
@@ -23,7 +23,7 @@ impl ModelIoError for ModelJsonIoError {}
 #[derive(Debug, Clone, Default, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Json {
     handler: FileBase,
 }
@@ -59,17 +59,15 @@ impl FileTrait for Json {
 }
 
 #[cfg(feature = "serde")]
-impl ModelFileTrait for Json {
+impl ModelFile for Json {
     type Error = ModelJsonIoError;
-
-    fn load_model<T: DeserializeOwned>(&self) -> Result<T, Self::Error> {
-        let data = self.load()?;
-        Ok(serde_json::from_str(&data)?)
+    
+    fn bytes_to_model<T: for<'de> Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error> {
+        Ok(serde_json::from_slice(&data)?)
     }
-
-    fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error> {
-        self.save(&serde_json::to_string_pretty(model)?)?;
-        Ok(())
+    
+    fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error> {
+        Ok(serde_json::to_vec_pretty(model)?)
     }
 }
 

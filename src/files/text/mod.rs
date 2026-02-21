@@ -1,7 +1,7 @@
 mod json;
-mod toml;
 mod md;
+mod toml;
 
 pub use json::{Json, ModelJsonIoError};
-pub use toml::{Toml, ModelTomlIoError};
 pub use md::Md;
+pub use toml::{ModelTomlIoError, Toml};

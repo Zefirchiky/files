@@ -65,12 +65,23 @@ impl FileBase {
     }
 
     pub fn save(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
-        fs::write(&self.file, data).unwrap();
+        fs::write(&self.file, data)?;
         Ok(())
     }
 
-    pub fn load(&self) -> std::io::Result<String> {
-        fs::read_to_string(&self.file)
+    #[cfg(feature = "async")]
+    pub async fn save_async(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
+        async_fs::write(&self.file, data).await?;
+        Ok(())
+    }
+
+    pub fn load(&self) -> std::io::Result<Vec<u8>> {
+        fs::read(&self.file)
+    }
+
+    #[cfg(feature = "async")]
+    pub async fn load_async(&self) -> std::io::Result<Vec<u8>> {
+        async_fs::read(&self.file).await
     }
 }
 

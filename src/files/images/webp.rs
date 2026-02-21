@@ -1,12 +1,13 @@
 use derive_more::{AsRef, Deref, DerefMut, From};
 
 #[cfg(feature = "image")]
-use crate::ImageFileTrait;
+use crate::ImageFile;
 use crate::{FileBase, FileTrait};
 
 #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Webp {
     file: FileBase,
 }
@@ -24,13 +25,13 @@ impl FileTrait for Webp {
 
     fn make_new(file: impl AsRef<std::path::Path>) -> Self {
         Self {
-            file: FileBase::new_with_handler::<Self>(file)
+            file: FileBase::new_with_handler::<Self>(file),
         }
     }
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Webp {
+impl ImageFile for Webp {
     fn image_format() -> image::ImageFormat {
         image::ImageFormat::WebP
     }
@@ -41,4 +42,3 @@ impl From<&str> for Webp {
         Self::new(value)
     }
 }
-

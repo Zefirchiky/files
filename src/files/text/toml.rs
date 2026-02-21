@@ -2,11 +2,11 @@ use std::{fs::File, io::Write, path::Path};
 
 use derive_more::{AsRef, Deref, DerefMut, From};
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize};
 
 use crate::{FileBase, FileTrait};
 #[cfg(feature = "serde")]
-use crate::{ModelFileTrait, model_file::ModelIoError};
+use crate::{ModelFile, model_file::ModelIoError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ModelTomlIoError {
@@ -26,7 +26,7 @@ impl ModelIoError for ModelTomlIoError {}
 #[derive(Debug, Clone, Default, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Toml {
     handler: FileBase,
 }
@@ -62,17 +62,15 @@ impl FileTrait for Toml {
 }
 
 #[cfg(feature = "serde")]
-impl ModelFileTrait for Toml {
+impl ModelFile for Toml {
     type Error = ModelTomlIoError;
 
-    fn load_model<T: DeserializeOwned>(&self) -> Result<T, Self::Error> {
-        let data = self.load()?;
-        Ok(serde_toml::from_str(&data)?)
+    fn bytes_to_model<T: for<'de> Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error> {
+        Ok(serde_toml::from_slice(&data)?)
     }
-
-    fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error> {
-        self.save(&serde_toml::to_string_pretty(model)?)?;
-        Ok(())
+    
+    fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error> {
+        Ok(serde_toml::to_string_pretty(model)?.into())
     }
 }
 

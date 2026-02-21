@@ -1,12 +1,32 @@
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize};
 
 use crate::FileTrait;
 
 pub trait ModelIoError: From<std::io::Error> {}
 
-pub trait ModelFileTrait: FileTrait {
+pub trait ModelFile: FileTrait {
     type Error: ModelIoError;
-
-    fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error>;
-    fn load_model<T: DeserializeOwned>(&self) -> Result<T, Self::Error>;
+    
+    fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error>;
+    fn save_model(&self, model: &impl Serialize) -> Result<(), Self::Error> {
+        self.save(&Self::model_to_bytes(model)?)?;
+        Ok(())
+    }
+    
+    #[cfg(feature = "async")]
+    async fn save_model_async(&self, model: &impl Serialize) -> Result<(), Self::Error> {
+        self.save_async(&Self::model_to_bytes(model)?).await?;
+        Ok(())
+    }
+    
+    fn bytes_to_model<T: for<'de> Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error>;
+    fn load_model<T: for<'de> Deserialize<'de>>(&self) -> Result<T, Self::Error> {
+        Self::bytes_to_model(self.load()?)
+    }
+    
+    
+    #[cfg(feature = "async")]
+    async fn load_model_async<T: for<'de> Deserialize<'de>>(&self) -> Result<T, Self::Error> {
+        Self::bytes_to_model(self.load_async().await?)
+    }
 }

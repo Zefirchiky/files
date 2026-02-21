@@ -1,4 +1,4 @@
-#![allow(refining_impl_trait)]
+#![allow(refining_impl_trait, async_fn_in_trait)]
 mod dir;
 mod file_base;
 mod file_types;
@@ -15,6 +15,8 @@ pub use file_types::FileTypes;
 pub use files::*;
 pub use fs_handler::FsHandler;
 #[cfg(feature = "image")]
-pub use image_file::{ImageFileEncodingTrait, ImageFileTrait, ImageIoError};
+pub use image_file::{ImageFileEncoding, ImageFile, ImageIoError};
+#[cfg(all(feature = "image", feature = "async"))]
+pub use image_file::{ImageFileEncodingAsync, ImageFileAsync};
 #[cfg(feature = "serde")]
-pub use model_file::{ModelFileTrait, ModelIoError};
+pub use model_file::{ModelFile, ModelIoError};

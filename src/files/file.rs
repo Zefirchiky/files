@@ -1,15 +1,13 @@
 use std::path::Path;
 
 use derive_more::{AsRef, Deref, DerefMut, From};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
 use crate::{FileBase, FileTrait};
 
 #[derive(Debug, Clone, Default, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct File {
     file: FileBase,
 }

@@ -1,12 +1,13 @@
 use derive_more::{AsRef, Deref, DerefMut, From};
 
 #[cfg(feature = "image")]
-use crate::ImageFileTrait;
+use crate::ImageFile;
 use crate::{FileBase, FileTrait};
 
 #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Png {
     file: FileBase,
 }
@@ -30,7 +31,7 @@ impl FileTrait for Png {
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Png {
+impl ImageFile for Png {
     fn image_format() -> image::ImageFormat {
         image::ImageFormat::Png
     }

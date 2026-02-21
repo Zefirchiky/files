@@ -1,12 +1,15 @@
 use derive_more::{AsRef, Deref, DerefMut, From};
 
-#[cfg(feature = "image")]
-use crate::{ImageFileTrait, ImageFileEncodingTrait};
 use crate::{FileBase, FileTrait};
+#[cfg(feature = "image")]
+use crate::{ImageFileEncoding, ImageFile};
+#[cfg(all(feature = "image", feature = "async"))]
+use crate::{ImageFileEncodingAsync, ImageFileAsync};
 
 #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
 #[from(forward)]
 #[as_ref(forward)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Jpeg {
     file: FileBase,
 }
@@ -30,14 +33,17 @@ impl FileTrait for Jpeg {
 }
 
 #[cfg(feature = "image")]
-impl ImageFileTrait for Jpeg {
+impl ImageFile for Jpeg {
     fn image_format() -> image::ImageFormat {
         image::ImageFormat::Jpeg
     }
 }
 
+#[cfg(all(feature = "image", feature = "async"))]
+impl ImageFileAsync for Jpeg {}
+
 #[cfg(feature = "image")]
-impl ImageFileEncodingTrait for Jpeg {
+impl ImageFileEncoding for Jpeg {
     fn get_encoder_w_quality(
         w: impl std::io::Write,
         quality: u8,
@@ -45,6 +51,9 @@ impl ImageFileEncodingTrait for Jpeg {
         image::codecs::jpeg::JpegEncoder::new_with_quality(w, quality)
     }
 }
+
+#[cfg(all(feature = "image", feature = "async"))]
+impl ImageFileEncodingAsync for Jpeg {}
 
 impl From<&str> for Jpeg {
     fn from(value: &str) -> Self {
