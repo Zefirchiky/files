@@ -63,49 +63,162 @@ impl ModelFile for Json {
 }
 
 #[cfg(test)]
-mod json_tests {
-    use std::fs;
+mod json {
+    use std::env::temp_dir;
 
-    use crate::{Json, Temporary};
-
-    static FILE_NAME_EXT: &str = "dis/init.json";
-    static TEMP_FILE_NAME_EXT: &str = "dis/init_temp.json";
-    static FILE_NAME: &str = "dis/init";
-    static TEMP_FILE_NAME: &str = "dis/init_temp";
+    use super::*;
 
     #[test]
-    fn init() {
-        Json::new(FILE_NAME_EXT);
-        assert!(
-            fs::exists(FILE_NAME_EXT).unwrap_or(false),
-            "File {FILE_NAME_EXT} was not created"
-        );
+    fn new_valid_extension() {
+        let dir = temp_dir();
+        let file_path = dir.join("data1.json");
+        // Should not panic
+        let _ = FileBase::<Json>::new(&file_path);
     }
 
     #[test]
     #[should_panic]
-    fn init_wrong_ext() {
-        Json::new(FILE_NAME);
+    fn new_invalid_extension_panics() {
+        let dir = temp_dir();
+        let file_path = dir.join("data2.txt");
+        let _ = FileBase::<Json>::new(&file_path);
     }
 
     #[test]
-    fn init_temp() {
-        {
-            let _tis = Temporary::new(Json::new(TEMP_FILE_NAME_EXT));
-            assert!(
-                fs::exists(TEMP_FILE_NAME_EXT).unwrap_or(false),
-                "File {TEMP_FILE_NAME_EXT} was not created"
-            );
-        }
-        assert!(
-            !fs::exists(TEMP_FILE_NAME_EXT).unwrap_or(false),
-            "File {TEMP_FILE_NAME_EXT} was not deleted"
-        );
+    fn create_file() {
+        let dir = temp_dir();
+        let file_path = dir.join("test1.json");
+        let handler = FileBase::<Json>::new(&file_path);
+        
+        handler.create().expect("Failed to create file");
+        assert!(file_path.exists());
     }
 
     #[test]
-    #[should_panic]
-    fn init_temp_wrong_ext() {
-        Temporary::new(Json::new(TEMP_FILE_NAME));
+    fn save_and_load() {
+        let dir = temp_dir();
+        let file_path = dir.join("save_test1.json");
+        let handler = FileBase::<Json>::new(&file_path);
+        let data = b"{\"key\": \"value\"}";
+
+        handler.save(data).expect("Save failed");
+        let loaded = handler.load().expect("Load failed");
+        
+        assert_eq!(loaded, data);
+    }
+
+    #[test]
+    fn load_non_existent_initializes() {
+        let dir = temp_dir();
+        let file_path = dir.join("init_test1.json");
+        let handler = FileBase::<Json>::new(&file_path);
+
+        // File doesn't exist yet, load should create it with Json::file_init_bytes()
+        let loaded = handler.load().expect("Load failed on new file");
+        
+        assert_eq!(loaded, Json::file_init_bytes().unwrap());
+        assert!(file_path.exists());
+    }
+}
+
+#[cfg(all(test, feature = "async"))]
+mod async_tests {
+    use std::env::temp_dir;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn async_save_load() {
+        let dir = temp_dir();
+        let file_path = dir.join("async_test.json");
+        let handler = FileBase::<Json>::new(&file_path);
+        let data = b"async data";
+
+        handler.save_async(&data).await.expect("Async save failed");
+        let loaded = handler.load_async().await.expect("Async load failed");
+
+        assert_eq!(loaded, data);
+    }
+}
+
+#[cfg(test)]
+mod json_from {
+    use super::*;
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn str() {
+        let _ = FileBase::<Json>::new("test.json");
+    }
+
+    #[test]
+    fn string() {
+        let path = String::from("test.json");
+        let _ = FileBase::<Json>::new(path);
+    }
+
+    #[test]
+    fn path() {
+        let path = Path::new("test.json");
+        let _ = FileBase::<Json>::new(path);
+    }
+
+    #[test]
+    fn pathbuf() {
+        let path = PathBuf::from("test.json");
+        let _ = FileBase::<Json>::new(path);
+    }
+}
+
+#[cfg(all(test, feature = "serde"))]
+mod json_model {
+    use crate::test_assets::{User, get_temp_path};
+
+    use super::*;
+
+    #[test]
+    fn bytes_conversion() {
+        let user = User { name: "Alice".into(), age: 30 };
+        
+        let bytes = Json::model_to_bytes(&user).unwrap();
+        let decoded: User = Json::bytes_to_model(bytes).unwrap();
+        
+        assert_eq!(user, decoded);
+    }
+
+    #[test]
+    fn model_lifecycle() {
+        let path = get_temp_path("lifecycle");
+        let handler = Json::new(&path);
+        let user = User { name: "Bob".into(), age: 25 };
+
+        // Save
+        handler.save_model(&user).expect("Save model failed");
+        
+        // Load
+        let loaded: User = handler.load_model().expect("Load model failed");
+        assert_eq!(user, loaded);
+
+        let _ = handler.remove();
+    }
+}
+
+#[cfg(all(test, feature = "async"))]
+mod json_model_async {
+    use crate::test_assets::{User, get_temp_path};
+
+    use super::*;
+
+    #[tokio::test]
+    async fn model_lifecycle_async() {
+        let path = get_temp_path("async_lifecycle");
+        let handler = Json::new(&path);
+        let user = User { name: "Async".into(), age: 10 };
+
+        handler.save_model_async(&user).await.expect("Async save failed");
+        let loaded: User = handler.load_model_async().await.expect("Async load failed");
+        
+        assert_eq!(user, loaded);
+        let _ = handler.remove_async().await;
     }
 }

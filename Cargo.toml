@@ -1,12 +1,12 @@
 [package]
 name = "filess"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Simplified file management"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-derive_more = { version = "2.0.1", features = ["from", "deref", "deref_mut", "debug", "as_ref", "from_str", "into_iterator"] }
+derive_more = { version = "2.0.1", features = ["from", "deref", "deref_mut", "debug", "as_ref", "into_iterator"] }
 image = { version = "0.25.9", optional = true }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
@@ -14,6 +14,9 @@ serde_toml = { package = "toml", version = "0.9.11", optional = true, features =
 serde_path_to_error = "0.1.20"
 thiserror = "2.0.17"
 tokio = { version = "1.49.0", default-features = false, features = ["fs", "parking_lot"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
 # default = []
@@ -23,5 +26,5 @@ serde = ["dep:serde", "dep:serde_json", "dep:serde_toml", "image?/serde"]
 image = ["dep:image"]
 async = ["dep:tokio"]
 
-[target.'cfg(target_os = "linux")'.features]
-async = ["dep:tokio", "tokio/io-uring"]
+# [target.'cfg(target_os = "linux")'.dependencies]
+# tokio = { version = "1.49.0", features = ["io-uring"] }

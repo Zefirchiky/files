@@ -18,10 +18,6 @@ pub struct FileBase<F: FileTrait> {
 impl<F: FileTrait> FileBase<F> {
     /// Creates a new FileHandler.
     ///
-    /// If the file does not exist, it will be created. If the parent directories do not exist, they will be created.
-    ///
-    /// The file will be initialized according to the rules of the Handler type.
-    ///
     /// # Panics
     ///
     /// Panics if the path is not a file or if the file does not have the correct extension.
@@ -81,7 +77,10 @@ impl<F: FileTrait> FileBase<F> {
         
         Ok(())
     }
-
+    
+    /// Saves data to the file.
+    /// 
+    /// File will be created if it didn't exist.
     pub fn save(&self, data: &impl AsRef<[u8]>) -> std::io::Result<()> {
         if let Some(parent) = self.path.parent() {
             create_dir_all(parent)?
@@ -99,7 +98,10 @@ impl<F: FileTrait> FileBase<F> {
         tokio::fs::write(&self.path, data).await?;
         Ok(())
     }
-
+    
+    /// Loads data from a file.
+    /// 
+    /// If file didn't exist, it will be created and `F::file_init_bytes()` will be returned.
     pub fn load(&self) -> std::io::Result<Vec<u8>> {
         if !self.path.try_exists()? { self.create()?; }
         fs::read(&self.path)
@@ -109,6 +111,15 @@ impl<F: FileTrait> FileBase<F> {
     pub async fn load_async(&self) -> std::io::Result<Vec<u8>> {
         if !tokio::fs::try_exists(self).await? { self.create_async().await?; }
         tokio::fs::read(&self.path).await
+    }
+    
+    pub fn remove(&self) -> std::io::Result<()> {
+        fs::remove_file(self)
+    }
+    
+    #[cfg(feature = "async")]
+    pub async fn remove_async(&self) -> std::io::Result<()> {
+        tokio::fs::remove_file(self).await
     }
 }
 
@@ -163,7 +174,7 @@ impl<H: FileTrait> Temporary<H> {
 
 impl<T: FileTrait> Drop for Temporary<T> {
     fn drop(&mut self) {
-        fs::remove_file(&self.inner).unwrap();
+        let _ = fs::remove_file(&self.inner);
         for dir in self.parent().into_iter().rev() {
             if fs::remove_dir(dir).is_err() {
                 break;

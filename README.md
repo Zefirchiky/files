@@ -6,7 +6,7 @@ Use filess as you would use String or Vec.
 
 Each file format is now a separate type, if your function needs json, you can put 'filess::Json' as file type, enforcing the proper path.
 
-Filess simplifies saving and loading of data, with `serde` and `image` optional integration.
+`Filess` simplifies saving and loading of data, with `serde` and `image` optional integration.
 
 ```rust
 let file1: Json = Json::new("path");            // Create new Json file. Filess will ensure that it's a valid path

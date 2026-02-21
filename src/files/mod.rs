@@ -1,7 +1,7 @@
 mod file;
 mod image;
-mod images;
-mod text;
+pub mod images;
+pub mod text;
 
 pub use file::File;
 pub use image::Image;
