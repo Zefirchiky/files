@@ -2,7 +2,7 @@ use std::{
     fmt::Debug, fs::{self, create_dir_all}, marker::PhantomData, ops::{Deref, DerefMut}, path::{Path, PathBuf}
 };
 
-use derive_more::{AsRef, Deref, DerefMut, From};
+use derive_more::{AsRef, Deref, DerefMut};
 
 #[derive(Debug, Clone, Default, AsRef, Deref, DerefMut)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -161,24 +161,39 @@ pub trait FileTrait:
     fn ext() -> &'static [&'static str];
 }
 
-#[derive(Debug, Clone, From, AsRef, Deref, DerefMut)]
-pub struct Temporary<H: FileTrait> {
-    inner: H,
-}
-
-impl<H: FileTrait> Temporary<H> {
-    pub fn new(handler: H) -> Self {
-        Self { inner: handler }
-    }
-}
-
-impl<T: FileTrait> Drop for Temporary<T> {
-    fn drop(&mut self) {
-        let _ = fs::remove_file(&self.inner);
-        for dir in self.parent().into_iter().rev() {
-            if fs::remove_dir(dir).is_err() {
-                break;
+#[macro_export]
+macro_rules! define_file {
+    (
+        $name:ident,
+        [$($ext:expr),*],
+        $($init_bytes:expr)?
+    ) => {
+        use crate::{FileBase, FileTrait};
+        
+        #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
+        #[from(forward)]
+        #[as_ref(forward)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+        pub struct $name {
+            file: FileBase<Self>,
+        }
+        
+        impl $name {
+            pub fn new(path: impl AsRef<std::path::Path>) -> Self {
+                Self { file: FileBase::new(path) }
             }
         }
-    }
+        
+        impl FileTrait for $name {
+            fn ext() -> &'static [&'static str] {
+                &[$($ext),*]
+            }
+            
+            $(
+                fn file_init_bytes() -> Option<&'static [u8]> {
+                    return Some($init_bytes);    
+                }
+            )?
+        }
+    };
 }

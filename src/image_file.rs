@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use image::{DynamicImage, ImageReader};
 
 use crate::FileTrait;
@@ -42,10 +40,33 @@ pub trait ImageFileAsync: ImageFile {
     }
 }
 
+#[macro_export]
+macro_rules! define_image_file {
+    (
+        $name:ident,
+        $format:expr
+    ) => {
+        #[cfg(feature = "image")]
+        const _: () = {
+            impl crate::ImageFile for $name {
+                fn image_format() -> image::ImageFormat {
+                    $format
+                }
+            }
+            
+            #[cfg(feature = "async")]
+            impl crate::ImageFileAsync for $name {}
+        };
+    };
+}
+
+pub trait ImageQualityConfig<'a> {
+    type Encoder: image::ImageEncoder;
+    fn get_encoder(&self, w: &'a mut Vec<u8>) -> Self::Encoder;
+}
+
 pub trait ImageQulityEncoding: FileTrait {
-    type Config: Sync + Send;
-    
-    fn get_encoder_w_quality(w: impl Write, config: Self::Config) -> impl image::ImageEncoder;
+    type Config: for<'a> ImageQualityConfig<'a> + Sync + Send;
     
     /// Save image with custom quality.
     /// 
@@ -56,7 +77,7 @@ pub trait ImageQulityEncoding: FileTrait {
         config: Self::Config,
     ) -> Result<(), ImageIoError> {
         let mut buf = vec![];
-        img.write_with_encoder(Self::get_encoder_w_quality(&mut buf, config))?;
+        img.write_with_encoder(config.get_encoder(&mut buf))?;
         self.save(&buf)?;
         Ok(())
     }
@@ -73,7 +94,7 @@ pub trait ImageQualityEncodingAsync: ImageQulityEncoding {
         config: Self::Config,
     ) -> Result<(), ImageIoError> {
         let mut buf = vec![];
-        img.write_with_encoder(Self::get_encoder_w_quality(&mut buf, config))?;
+        img.write_with_encoder(config.get_encoder(&mut buf))?;
         self.save_async(&buf).await?;
         Ok(())
     }
@@ -96,4 +117,19 @@ pub trait ImageQualityEncodingAsync: ImageQulityEncoding {
             self.save_image_custom(&img, config)
         })).await
     }
+}
+
+#[macro_export]
+macro_rules! define_custom_quality_image {
+    ($name:ident, $config:ident) => {
+        #[cfg(feature = "image")]
+        const _: () = {
+            impl crate::ImageQulityEncoding for $name {
+                type Config = $config;
+            }
+
+            #[cfg(feature = "async")]
+            impl crate::ImageQualityEncodingAsync for $name {}
+        };
+    };
 }

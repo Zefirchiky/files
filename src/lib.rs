@@ -1,6 +1,7 @@
 #![allow(refining_impl_trait, async_fn_in_trait)]
 mod dir;
 mod file_base;
+mod temporary;
 mod file_types;
 pub mod files;
 mod fs_handler;
@@ -10,7 +11,8 @@ mod image_file;
 mod model_file;
 
 pub use dir::Dir;
-pub use file_base::{FileBase, FileTrait, Temporary};
+pub use file_base::{FileBase, FileTrait};
+pub use temporary::Temporary;
 pub use file_types::*;
 pub use files::*;
 pub use fs_handler::FsHandler;
@@ -18,6 +20,8 @@ pub use fs_handler::FsHandler;
 pub use image_file::*;
 #[cfg(feature = "serde")]
 pub use model_file::*;
+
+
 
 #[cfg(test)]
 pub mod test_assets {

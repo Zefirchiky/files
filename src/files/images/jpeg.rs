@@ -1,6 +1,6 @@
 use derive_more::{AsRef, Deref, DerefMut, From};
 
-use crate::{FileBase, FileTrait};
+use crate::{ImageQualityConfig, define_custom_quality_image, define_file, define_image_file};
 
 #[cfg(feature = "image")]
 #[derive(Debug, Clone, Copy)]
@@ -15,47 +15,26 @@ impl JpegConfig {
     }
 }
 
-#[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
-#[from(forward)]
-#[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Jpeg {
-    file: FileBase<Self>,
-}
-
-impl Jpeg {
-    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
-        Self { file: FileBase::new(path) }
-    }
-}
-
-impl FileTrait for Jpeg {
-    fn ext() -> &'static [&'static str] {
-        &["jpeg"]
-    }
-}
-
 #[cfg(feature = "image")]
-impl crate::ImageFile for Jpeg {
-    fn image_format() -> image::ImageFormat {
-        image::ImageFormat::Jpeg
+impl<'a> ImageQualityConfig<'a> for JpegConfig {
+    type Encoder = image::codecs::jpeg::JpegEncoder<&'a mut Vec<u8>>;
+    fn get_encoder(&self, w: &'a mut Vec<u8>) -> Self::Encoder {
+        image::codecs::jpeg::JpegEncoder::new_with_quality(w, self.quality)
     }
 }
 
-#[cfg(all(feature = "image", feature = "async"))]
-impl crate::ImageFileAsync for Jpeg {}
+define_file!(Jpeg, ["jpeg"], );
+define_image_file!(Jpeg, image::ImageFormat::Jpeg);
+define_custom_quality_image!(Jpeg, JpegConfig);
 
-#[cfg(feature = "image")]
-impl crate::ImageQulityEncoding for Jpeg {
-    type Config = JpegConfig;
+// #[cfg(test)]
+// mod jpeg {
+//     use crate::ImageQualityEncodingAsync;
+
+//     use super::*;
     
-    fn get_encoder_w_quality(
-        w: impl std::io::Write,
-        Self::Config { quality }: Self::Config,
-    ) -> image::codecs::jpeg::JpegEncoder<impl std::io::Write> {
-        image::codecs::jpeg::JpegEncoder::new_with_quality(w, quality)
-    }
-}
-
-#[cfg(all(feature = "image", feature = "async"))]
-impl crate::ImageQualityEncodingAsync for Jpeg {}
+//     #[test]
+//     fn macros() {
+//         Jpeg
+//     }
+// }

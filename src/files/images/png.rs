@@ -2,7 +2,9 @@ use derive_more::{AsRef, Deref, DerefMut, From};
 
 #[cfg(feature = "image")]
 use image::codecs::png::{CompressionType, FilterType};
-use crate::{FileBase, FileTrait};
+#[cfg(feature = "image")]
+use crate::ImageQualityConfig;
+use crate::{define_custom_quality_image, define_file, define_image_file};
 
 #[cfg(feature = "image")]
 #[derive(Debug, Clone, Copy)]
@@ -18,47 +20,14 @@ impl PngConfig {
     }
 }
 
-#[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
-#[from(forward)]
-#[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Png {
-    file: FileBase<Self>,
-}
-
-impl Png {
-    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
-        Self { file: FileBase::new(path) }
-    }
-}
-
-impl FileTrait for Png {
-    fn ext() -> &'static [&'static str] {
-        &["png"]
-    }
-}
-
 #[cfg(feature = "image")]
-impl crate::ImageFile for Png {
-    fn image_format() -> image::ImageFormat {
-        image::ImageFormat::Png
+impl<'a> ImageQualityConfig<'a> for PngConfig {
+    type Encoder = image::codecs::png::PngEncoder<&'a mut Vec<u8>>;
+    fn get_encoder(&self, w: &'a mut Vec<u8>) -> Self::Encoder {
+        image::codecs::png::PngEncoder::new_with_quality(w, self.compression, self.filter)
     }
 }
 
-#[cfg(all(feature = "image", feature = "async"))]
-impl crate::ImageFileAsync for Png {}
-
-#[cfg(feature = "image")]
-impl crate::ImageQulityEncoding for Png {
-    type Config = PngConfig;
-    
-    fn get_encoder_w_quality(
-        w: impl std::io::Write,
-        Self::Config { compression, filter }: Self::Config,
-    ) -> image::codecs::png::PngEncoder<impl std::io::Write> {
-        image::codecs::png::PngEncoder::new_with_quality(w, compression, filter)
-    }
-}
-
-#[cfg(all(feature = "image", feature = "async"))]
-impl crate::ImageQualityEncodingAsync for Png {}
+define_file!(Png, ["png"], );
+define_image_file!(Png, image::ImageFormat::Png);
+define_custom_quality_image!(Png, PngConfig);

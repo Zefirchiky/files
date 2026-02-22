@@ -1,10 +1,8 @@
 use derive_more::{AsRef, Deref, DerefMut, From};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "serde")]
 pub use crate::ModelFile;
-use crate::{FileBase, FileTrait};
+use crate::define_file;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ModelJsonIoError {
@@ -18,46 +16,17 @@ pub enum ModelJsonIoError {
 #[cfg(feature = "serde")]
 impl crate::ModelIoError for ModelJsonIoError {}
 
-#[derive(Debug, Clone, Default, From, AsRef, Deref, DerefMut)]
-#[from(forward)]
-#[as_ref(forward)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct Json {
-    file: FileBase<Self>,
-}
-
-impl Json {
-    /// Creates a new JsonHandler for the given file.
-    ///
-    /// If the file does not exist, it will be created. If the parent directories do not exist, they will be created.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the path exists but is not a file, or if the file does not have the correct extension.
-    pub fn new(path: impl AsRef<std::path::Path>) -> Self {
-        Self { file: FileBase::new(path) }
-    }
-}
-
-impl FileTrait for Json {
-    fn file_init_bytes() -> Option<&'static [u8]> {
-        Some(b"{}")
-    }
-
-    fn ext() -> &'static [&'static str] {
-        &["json"]
-    }
-}
+define_file!(Json, ["json"], b"{}");
 
 #[cfg(feature = "serde")]
 impl ModelFile for Json {
     type Error = ModelJsonIoError;
     
-    fn bytes_to_model<T: for<'de> Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error> {
+    fn bytes_to_model<T: for<'de> serde::Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error> {
         Ok(serde_json::from_slice(&data)?)
     }
     
-    fn model_to_bytes(model: &impl Serialize) -> Result<Vec<u8>, Self::Error> {
+    fn model_to_bytes(model: &impl serde::Serialize) -> Result<Vec<u8>, Self::Error> {
         Ok(serde_json::to_vec_pretty(model)?)
     }
 }

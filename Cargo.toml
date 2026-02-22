@@ -1,6 +1,6 @@
 [package]
 name = "filess"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 description = "Simplified file management"
 license = "MIT OR Apache-2.0"
@@ -19,19 +19,22 @@ tokio = { version = "1.49.0", default-features = false, features = ["fs", "parki
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
-default = ["json", "toml", "md", "jpeg", "png", "webp"]
-# default = ["serde", "image", "async", "json", "toml", "md", "jpeg", "png", "webp"]
+# default = ["json", "toml", "md", "jpeg", "png", "webp"]
+default = ["serde", "image", "async", "json", "toml", "md", "jpeg", "png", "webp"]
 # default = ["serde", "image", "async"]
 # default = []
 
-json = []
-toml = []
-md = []
-jpeg = []
-png = []
-webp = []
+json = ["dep:serde_json", "_any_text"]
+toml = ["dep:serde_toml", "_any_text"]
+md = ["_any_text"]
+jpeg = ["_any_image"]
+png = ["_any_image"]
+webp = ["_any_image"]
 
-serde = ["dep:serde", "dep:serde_json", "dep:serde_toml", "image?/serde"]
+_any_text = []
+_any_image = []
+
+serde = ["dep:serde", "image?/serde"]
 image = ["dep:image"]
 async = ["dep:tokio"]
 

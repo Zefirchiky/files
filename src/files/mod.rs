@@ -5,15 +5,7 @@ pub mod text;
 
 pub use file::File;
 pub use image::Image;
-#[cfg(any(
-    feature = "jpeg",
-    feature = "png",
-    feature = "webp",
-))]
+#[cfg(feature = "_any_image")]
 pub use images::*;
-#[cfg(any(
-    feature = "json",
-    feature = "toml",
-    feature = "md",
-))]
+#[cfg(feature = "_any_text")]
 pub use text::*;

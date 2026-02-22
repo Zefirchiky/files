@@ -30,3 +30,23 @@ pub trait ModelFile: FileTrait {
         Self::bytes_to_model(self.load_async().await?)
     }
 }
+
+// #[macro_export]
+// macro_rules! define_model_file {
+//     ($name:ident, $error:ident) => {
+//         #[cfg(feature = "serde")]
+//         const _: () = {
+//             impl ModelFile for $name {
+//                 type Error = $error;
+                
+//                 fn bytes_to_model<T: for<'de> serde::Deserialize<'de>>(data: Vec<u8>) -> Result<T, Self::Error> {
+//                     Ok(serde_json::from_slice(&data)?)
+//                 }
+                
+//                 fn model_to_bytes(model: &impl serde::Serialize) -> Result<Vec<u8>, Self::Error> {
+//                     Ok(serde_json::to_vec_pretty(model)?)
+//                 }
+//             }
+//         };
+//     };
+// }
