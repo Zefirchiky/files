@@ -2,8 +2,6 @@ use derive_more::{AsRef, Deref, DerefMut, From};
 
 #[cfg(feature = "image")]
 use image::codecs::png::{CompressionType, FilterType};
-#[cfg(feature = "image")]
-use crate::ImageQualityConfig;
 use crate::{define_custom_quality_image, define_file, define_image_file};
 
 #[cfg(feature = "image")]
@@ -21,7 +19,7 @@ impl PngConfig {
 }
 
 #[cfg(feature = "image")]
-impl<'a> ImageQualityConfig<'a> for PngConfig {
+impl<'a> crate::ImageQualityConfig<'a> for PngConfig {
     type Encoder = image::codecs::png::PngEncoder<&'a mut Vec<u8>>;
     fn get_encoder(&self, w: &'a mut Vec<u8>) -> Self::Encoder {
         image::codecs::png::PngEncoder::new_with_quality(w, self.compression, self.filter)

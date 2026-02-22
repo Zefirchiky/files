@@ -40,26 +40,6 @@ pub trait ImageFileAsync: ImageFile {
     }
 }
 
-#[macro_export]
-macro_rules! define_image_file {
-    (
-        $name:ident,
-        $format:expr
-    ) => {
-        #[cfg(feature = "image")]
-        const _: () = {
-            impl crate::ImageFile for $name {
-                fn image_format() -> image::ImageFormat {
-                    $format
-                }
-            }
-            
-            #[cfg(feature = "async")]
-            impl crate::ImageFileAsync for $name {}
-        };
-    };
-}
-
 pub trait ImageQualityConfig<'a> {
     type Encoder: image::ImageEncoder;
     fn get_encoder(&self, w: &'a mut Vec<u8>) -> Self::Encoder;
@@ -117,19 +97,4 @@ pub trait ImageQualityEncodingAsync: ImageQulityEncoding {
             self.save_image_custom(&img, config)
         })).await
     }
-}
-
-#[macro_export]
-macro_rules! define_custom_quality_image {
-    ($name:ident, $config:ident) => {
-        #[cfg(feature = "image")]
-        const _: () = {
-            impl crate::ImageQulityEncoding for $name {
-                type Config = $config;
-            }
-
-            #[cfg(feature = "async")]
-            impl crate::ImageQualityEncodingAsync for $name {}
-        };
-    };
 }

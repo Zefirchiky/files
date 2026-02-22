@@ -1,4 +1,5 @@
 #![allow(refining_impl_trait, async_fn_in_trait)]
+mod macros;
 mod dir;
 mod file_base;
 mod temporary;
