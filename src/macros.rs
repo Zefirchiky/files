@@ -13,22 +13,27 @@ macro_rules! define_file {
         #[from(forward)]
         #[as_ref(forward)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+        #[doc = concat!("Returns the file extensions supported by ", stringify!($name), ".")]
         pub struct $name {
             file: FileBase<Self>,
         }
         
         impl $name {
+            #[doc = concat!("Creates new ", stringify!($name), ".",
+                "\n\n#Panics")]
             pub fn new(path: impl AsRef<std::path::Path>) -> Self {
                 Self { file: FileBase::new(path) }
             }
         }
         
         impl FileTrait for $name {
+            #[doc = concat!("Returns the file extensions supported by ", stringify!($name), ".")]
             fn ext() -> &'static [&'static str] {
                 &[$($ext),*]
             }
             
             $(
+                #[doc = concat!("Returns optional file initial bytes for ", stringify!($name), ".")]
                 fn file_init_bytes() -> Option<&'static [u8]> {
                     return Some($init_bytes);    
                 }

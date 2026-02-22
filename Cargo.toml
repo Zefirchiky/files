@@ -1,17 +1,16 @@
 [package]
 name = "filess"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 description = "Simplified file management"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
 derive_more = { version = "2.0.1", features = ["from", "deref", "deref_mut", "debug", "as_ref", "into_iterator"] }
-image = { version = "0.25.9", optional = true }
+image = { version = "0.25.9", optional = true, default-features = false }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
 serde_toml = { package = "toml", version = "0.9.11", optional = true, features = ["fast_hash"] }
-serde_path_to_error = "0.1.20"
 thiserror = "2.0.17"
 tokio = { version = "1.49.0", default-features = false, features = ["fs", "parking_lot"], optional = true }
 
@@ -19,7 +18,7 @@ tokio = { version = "1.49.0", default-features = false, features = ["fs", "parki
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
-default = ["all-files"]
+default = ["all-files", "rayon"]
 # default = ["serde", "image", "async", "all-files"]
 # default = ["serde", "image", "async"]
 
@@ -32,17 +31,19 @@ toml = ["dep:serde_toml", "_any_text"]
 md = ["_any_text"]
 txt = ["_any_text"]
 
-jpeg = ["_any_image"]
-png = ["_any_image"]
-webp = ["_any_image"]
-avif = ["_any_image"]
-tiff = ["_any_image"]
+jpeg = ["_any_image", "image?/jpeg"]
+png = ["_any_image", "image?/png"]
+webp = ["_any_image", "image?/webp"]
+avif = ["_any_image", "image?/avif"]
+tiff = ["_any_image", "image?/tiff"]
 
 _any_text = []
 _any_image = []
 
 serde = ["dep:serde", "image?/serde"]
 image = ["dep:image"]
+image-nasm = ["image", "image/nasm"]
+rayon = ["image?/rayon"]
 async = ["dep:tokio"]
 
 # [target.'cfg(target_os = "linux")'.dependencies]
