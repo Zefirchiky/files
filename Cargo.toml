@@ -1,6 +1,6 @@
 [package]
 name = "filess"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 description = "Simplified file management"
 license = "MIT OR Apache-2.0"
@@ -19,8 +19,8 @@ tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
 default = ["all-files", "rayon"]
-# default = ["serde", "image", "async", "all-files"]
-# default = ["serde", "image", "async"]
+# default = ["serde", "image", "async", "all-files", "rayon"]
+# default = ["serde", "image", "async", "rayon"]
 
 all-files = ["all-text", "all-images"]
 all-text = ["json", "toml", "md", "txt"]

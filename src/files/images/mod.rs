@@ -10,12 +10,12 @@ mod avif;
 mod tiff;
 
 #[cfg(feature = "jpeg")]
-pub use jpeg::Jpeg;
+pub use jpeg::*;
 #[cfg(feature = "png")]
-pub use png::Png;
+pub use png::*;
 #[cfg(feature = "webp")]
-pub use webp::WebP;
+pub use webp::*;
 #[cfg(feature = "avif")]
-pub use avif::Avif;
+pub use avif::*;
 #[cfg(feature = "tiff")]
-pub use tiff::Tiff;
+pub use tiff::*;
