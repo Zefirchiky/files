@@ -13,6 +13,7 @@ macro_rules! define_file {
         #[from(forward)]
         #[as_ref(forward)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+        #[cfg_attr(test, derive(PartialEq))]
         #[doc = concat!("Returns the file extensions supported by ", stringify!($name), ".")]
         pub struct $name {
             file: FileBase<Self>,
@@ -75,4 +76,43 @@ macro_rules! define_custom_quality_image {
             impl crate::ImageQualityEncodingAsync for $name {}
         };
     };
+}
+
+#[macro_export]
+macro_rules! define_file_types {
+    (
+        $name:ident,
+        $fallback:ident,
+        $($(#[cfg($meta:meta)])? $variant:ident,)*
+    ) => {
+        #[derive(Debug)]
+        #[cfg_attr(test, derive(PartialEq))]
+        pub enum $name {
+            $fallback(crate::$fallback),
+            $(
+                $(#[cfg($meta)])?
+                $variant(crate::$variant),
+            )*
+        }
+
+        impl $name {
+            pub fn from_ext(path: impl AsRef<Path>) -> Self {
+                let path_ref = path.as_ref();
+                
+                if let Some(ext) = path_ref.extension().and_then(|s| s.to_str()) {
+                    $(
+                        $(#[cfg($meta)])?
+                        {
+                            if crate::$variant::ext().contains(&ext) {
+                                return Self::$variant(crate::$variant::new(path_ref));
+                            }
+                        }
+                    )*
+                }
+
+                // Default fallback
+                Self::$fallback(crate::$fallback::new(path_ref))
+            }
+        }
+    }
 }

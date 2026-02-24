@@ -6,6 +6,7 @@ use derive_more::{AsRef, Deref, DerefMut};
 
 #[derive(Debug, Clone, Default, AsRef, Deref, DerefMut)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct FileBase<F: FileTrait> {
     // TODO: With thousands of paths, central storage is preferable. Something like a mini filesystem. OPTIMIZATIONS BABE
     #[as_ref(forward)]
