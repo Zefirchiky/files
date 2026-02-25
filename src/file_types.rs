@@ -38,9 +38,9 @@ impl ModelTypes {
         
         if let Some(ext) = path_ref.extension().and_then(|s| s.to_str()) {
             if crate::Json::ext().contains(&ext) {
-                return Some(Self::Json(crate::Json::new(path_ref)));
+                return Some(Self::Json(crate::Json::new(&path_ref)));
             } else if crate::Toml::ext().contains(&ext) {
-                return Some(Self::Toml(crate::Toml::new(path_ref)));
+                return Some(Self::Toml(crate::Toml::new(&path_ref)));
             }
         }
         None
@@ -69,6 +69,6 @@ mod file_types {
     #[test]
     fn from_ext() {
         let file = FileType::from_ext("file.json");
-        assert_eq!(file, FileType::Json(Json::new("file.json")))
+        assert_eq!(file, FileType::Json(Json::new(&"file.json")))
     }
 }

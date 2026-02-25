@@ -2,12 +2,12 @@
 macro_rules! define_file {
     (
         $name:ident,
-        [$($ext:expr),*],
-        $($init_bytes:expr)?
+        [$($ext:expr),*]
+        $(,$init_bytes:expr)?
     ) => {
         use derive_more::{From, AsRef, Deref, DerefMut};
         
-        use crate::{FileBase, FileTrait};
+        pub use crate::{FileBase, FileTrait};
         
         #[derive(Debug, Default, Clone, From, AsRef, Deref, DerefMut)]
         #[from(forward)]
@@ -22,12 +22,19 @@ macro_rules! define_file {
         impl $name {
             #[doc = concat!("Creates new ", stringify!($name), ".",
                 "\n\n#Panics")]
-            pub fn new(path: impl AsRef<std::path::Path>) -> Self {
-                Self { file: FileBase::new(path) }
+            pub fn new(path: impl AsRef<std::path::Path>) -> Self { // A convenience method, otherwise user will need to import `FileTrait`
+                <Self as FileTrait>::new(path)      // ? : Duplication that might be unnecessary???
+                // TODO: Check binary size generated
             }
         }
         
         impl FileTrait for $name {
+            #[doc = concat!("Creates new ", stringify!($name), ".",
+                "\n\n#Panics")]
+            fn new(path: impl AsRef<std::path::Path>) -> Self {
+                Self { file: FileBase::new(path) }
+            }
+            
             #[doc = concat!("Returns the file extensions supported by ", stringify!($name), ".")]
             fn ext() -> &'static [&'static str] {
                 &[$($ext),*]
@@ -104,14 +111,14 @@ macro_rules! define_file_types {
                         $(#[cfg($meta)])?
                         {
                             if crate::$variant::ext().contains(&ext) {
-                                return Self::$variant(crate::$variant::new(path_ref));
+                                return Self::$variant(crate::$variant::new(&path_ref));
                             }
                         }
                     )*
                 }
 
                 // Default fallback
-                Self::$fallback(crate::$fallback::new(path_ref))
+                Self::$fallback(crate::$fallback::new(&path_ref))
             }
         }
     }

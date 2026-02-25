@@ -17,6 +17,6 @@ impl<'a> crate::ImageQualityConfig<'a> for PngConfig {
     }
 }
 
-define_file!(Png, ["png"], );
+define_file!(Png, ["png"]);
 define_image_file!(Png, image::ImageFormat::Png);
 define_custom_quality_image!(Png, PngConfig);

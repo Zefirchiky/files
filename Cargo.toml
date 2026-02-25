@@ -11,6 +11,7 @@ image = { version = "0.25.9", optional = true, default-features = false }
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
 serde_toml = { package = "toml", version = "0.9.11", optional = true, features = ["fast_hash"] }
+symphonia = { version = "0.5.5", optional = true, default-features = false }
 thiserror = "2.0.17"
 tokio = { version = "1.49.0", default-features = false, features = ["fs", "parking_lot"], optional = true }
 
@@ -22,9 +23,10 @@ default = ["all-files", "rayon"]
 # default = ["serde", "image", "async", "all-files", "rayon"]
 # default = ["serde", "image", "async", "rayon"]
 
-all-files = ["all-text", "all-images"]
+all-files = ["all-text", "all-images", "all-audio"]
 all-text = ["json", "toml", "md", "txt"]
 all-images = ["jpeg", "png", "webp", "avif", "tiff"]
+all-audio = ["ogg"]
 
 json = ["dep:serde_json", "_any_text"]
 toml = ["dep:serde_toml", "_any_text"]
@@ -37,14 +39,19 @@ webp = ["_any_image", "image?/webp"]
 avif = ["_any_image", "image?/avif"]
 tiff = ["_any_image", "image?/tiff"]
 
+ogg = ["_any_audio", "symphonia?/ogg"]
+
 _any_text = []
 _any_image = []
+_any_audio = []
 
 serde = ["dep:serde", "image?/serde"]
 image = ["dep:image"]
 image-nasm = ["image", "image/nasm"]
 rayon = ["image?/rayon"]
 async = ["dep:tokio"]
+symphonia = ["dep:symphonia"]
+symphonia-simd = ["symphonia", "symphonia/opt-simd"]
 
 # [target.'cfg(target_os = "linux")'.dependencies]
 # tokio = { version = "1.49.0", features = ["io-uring"] }

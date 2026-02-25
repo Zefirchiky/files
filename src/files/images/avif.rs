@@ -16,6 +16,6 @@ impl<'a> crate::ImageQualityConfig<'a> for AvifConfig {
     }
 }
 
-define_file!(Avif, ["avif"], );
+define_file!(Avif, ["avif"]);
 define_image_file!(Avif, image::ImageFormat::Avif);
 define_custom_quality_image!(Avif, AvifConfig);

@@ -43,7 +43,7 @@ mod json {
         let dir = temp_dir();
         let file_path = dir.join("data1.json");
         // Should not panic
-        let _ = Temporary::new(Json::new(&file_path));
+        let _ = Temporary::new(Json::new(file_path));
     }
 
     #[test]
@@ -51,7 +51,7 @@ mod json {
     fn new_invalid_extension_panics() {
         let dir = temp_dir();
         let file_path = dir.join("data2.txt");
-        let _ = Temporary::new(Json::new(&file_path));
+        let _ = Temporary::new(Json::new(file_path));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod json {
     fn save_and_load() {
         let dir = temp_dir();
         let file_path = dir.join("save_test1.json");
-        let handler = Temporary::new(Json::new(&file_path));
+        let handler = Temporary::new(Json::new(file_path));
         let data = b"{\"key\": \"value\"}";
 
         handler.save(data).expect("Save failed");
@@ -127,19 +127,19 @@ mod json_from {
     #[test]
     fn string() {
         let path = String::from("test.json");
-        let _ = Json::new(path);
+        let _ = Json::new(&path);
     }
 
     #[test]
     fn path() {
         let path = Path::new("test.json");
-        let _ = Json::new(path);
+        let _ = Json::new(&path);
     }
 
     #[test]
     fn pathbuf() {
         let path = PathBuf::from("test.json");
-        let _ = Json::new(path);
+        let _ = Json::new(&path);
     }
 }
 

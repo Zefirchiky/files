@@ -155,9 +155,10 @@ pub trait FileTrait:
     + From<PathBuf>
     + From<&'static str>
     + AsRef<Path>
-    + Deref // Deref here is fine, as files should not have any more information and should not have any more function than wrapping FileBase
-    + DerefMut<Target = FileBase<Self>>
+    + Deref<Target = FileBase<Self>> // Deref here is fine, as files should not have any more information and should not have any more function than wrapping FileBase
+    + DerefMut
 {
+    fn new(path: impl AsRef<Path>) -> Self;
     fn file_init_bytes() -> Option<&'static [u8]> { None }
     fn ext() -> &'static [&'static str];
 }

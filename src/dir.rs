@@ -90,7 +90,7 @@ impl Div<&str> for Dir {
     fn div(self, rhs: &str) -> Self::Output {
         let new_path = self.path.join(rhs);
         if let Some(_) = new_path.extension() {
-            FsHandler::File(File::new(self.join(rhs)))
+            FsHandler::File(File::new(&self.join(rhs)))
         } else {
             FsHandler::Dir(Self::new(self.join(rhs)))
         }

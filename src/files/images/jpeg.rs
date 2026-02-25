@@ -15,7 +15,7 @@ impl<'a> crate::ImageQualityConfig<'a> for JpegConfig {
     }
 }
 
-define_file!(Jpeg, ["jpeg", "jpg"], );
+define_file!(Jpeg, ["jpeg", "jpg"]);
 define_image_file!(Jpeg, image::ImageFormat::Jpeg);
 define_custom_quality_image!(Jpeg, JpegConfig);
 

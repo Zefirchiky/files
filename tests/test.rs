@@ -1,5 +1,5 @@
-// use filess::Jp;
-
 // fn main() {
-//     let f1 = Jpeg::new("this.jpeg");
+//     fn this<F: filess::ModelFile>() {
+//         F::new("path");
+//     }
 // }

@@ -17,7 +17,7 @@ pub enum ModelTomlIoError {
 #[cfg(feature = "serde")]
 impl crate::ModelIoError for ModelTomlIoError {}
 
-define_file!(Toml, ["toml"], );
+define_file!(Toml, ["toml"]);
 
 #[cfg(feature = "serde")]
 impl ModelFile for Toml {
