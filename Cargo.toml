@@ -1,6 +1,6 @@
 [package]
 name = "filess"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2024"
 description = "Simplified file management"
 license = "MIT OR Apache-2.0"
@@ -25,11 +25,11 @@ default = ["all-files", "rayon"]
 
 all-files = ["all-text", "all-images", "all-audio"]
 all-text = ["json", "toml", "md", "txt"]
-all-images = ["jpeg", "png", "webp", "avif", "tiff"]
+all-images = ["jpeg", "png", "webp", "avif", "tiff", "gif", "bmp", "exr", "ff", "hdr", "ico", "pnm", "qoi", "tga"]
 all-audio = ["ogg"]
 
-json = ["dep:serde_json", "_any_text"]
-toml = ["dep:serde_toml", "_any_text"]
+json = ["dep:serde_json", "_any_text", "_any_model"]
+toml = ["dep:serde_toml", "_any_text", "_any_model"]
 md = ["_any_text"]
 txt = ["_any_text"]
 
@@ -38,10 +38,20 @@ png = ["_any_image", "image?/png"]
 webp = ["_any_image", "image?/webp"]
 avif = ["_any_image", "image?/avif"]
 tiff = ["_any_image", "image?/tiff"]
+gif = ["_any_image", "image?/gif"]
+bmp = ["_any_image", "image?/bmp"]
+exr = ["_any_image", "image?/exr"]
+ff = ["_any_image", "image?/ff"]
+hdr = ["_any_image", "image?/hdr"]
+ico = ["_any_image", "image?/ico"]
+pnm = ["_any_image", "image?/pnm"]
+qoi = ["_any_image", "image?/qoi"]
+tga = ["_any_image", "image?/tga"]
 
 ogg = ["_any_audio", "symphonia?/ogg"]
 
 _any_text = []
+_any_model = []
 _any_image = []
 _any_audio = []
 

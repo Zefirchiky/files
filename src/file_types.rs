@@ -12,6 +12,15 @@ define_file_types! {
     #[cfg(feature = "jpeg")] Jpeg,
     #[cfg(feature = "png")]  Png,
     #[cfg(feature = "webp")] WebP,
+    #[cfg(feature = "gif")]  Gif,
+    #[cfg(feature = "bmp")]  Bmp,
+    #[cfg(feature = "exr")]  Exr,
+    #[cfg(feature = "ff")]   Ff,
+    #[cfg(feature = "hdr")]  Hdr,
+    #[cfg(feature = "ico")]  Ico,
+    #[cfg(feature = "pnm")]  Pnm,
+    #[cfg(feature = "qoi")]  Qoi,
+    #[cfg(feature = "tga")]  Tga,
 }
 
 define_file_types! {
@@ -33,14 +42,20 @@ pub enum ModelTypes {
 
 #[cfg(feature = "serde")]
 impl ModelTypes {
+    #[allow(unused_variables)]
     pub fn from_ext(path: &impl AsRef<Path>) -> Option<Self> {
-        let path_ref = path.as_ref();
-        
-        if let Some(ext) = path_ref.extension().and_then(|s| s.to_str()) {
-            if crate::Json::ext().contains(&ext) {
-                return Some(Self::Json(crate::Json::new(&path_ref)));
-            } else if crate::Toml::ext().contains(&ext) {
-                return Some(Self::Toml(crate::Toml::new(&path_ref)));
+        #[cfg(feature = "_any_model")]
+        {
+            let path_ref = path.as_ref();
+            if let Some(ext) = path_ref.extension().and_then(|s| s.to_str()) {
+                #[cfg(feature = "json")]
+                if crate::Json::ext().contains(&ext) {
+                    return Some(Self::Json(crate::Json::new(&path_ref)));
+                }
+                #[cfg(feature = "toml")]
+                if crate::Toml::ext().contains(&ext) {
+                    return Some(Self::Toml(crate::Toml::new(&path_ref)));
+                }
             }
         }
         None
@@ -52,17 +67,24 @@ impl ModelTypes {
 // }
 
 #[cfg(feature = "image")]
-pub enum ImageType {
-    Image(crate::Image),
-    #[cfg(feature = "jpeg")]
-    Jpeg(crate::Jpeg),
-    #[cfg(feature = "png")]
-    Png(crate::Png),
-    #[cfg(feature = "webp")]
-    WebP(crate::WebP),
-}
+define_file_types!(
+    ImageTypes,
+    Image,
+    #[cfg(feature = "jpeg")] Jpeg,
+    #[cfg(feature = "png")]  Png,
+    #[cfg(feature = "webp")] WebP,
+    #[cfg(feature = "gif")]  Gif,
+    #[cfg(feature = "bmp")]  Bmp,
+    #[cfg(feature = "exr")]  Exr,
+    #[cfg(feature = "ff")]   Ff,
+    #[cfg(feature = "hdr")]  Hdr,
+    #[cfg(feature = "ico")]  Ico,
+    #[cfg(feature = "pnm")]  Pnm,
+    #[cfg(feature = "qoi")]  Qoi,
+    #[cfg(feature = "tga")]  Tga,
+);
 
-#[cfg(test)]
+#[cfg(all(test, feature = "json"))]
 mod file_types {
     use crate::{FileType, Json};
 

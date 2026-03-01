@@ -31,14 +31,13 @@ Jpeg::new("another/path/image.jpeg").save_image_async(&image2).await?;
 
 | Feature      | Description
 |--------------|------------
-| `all-files`  | All currently supported files, includes `all-text` and `all-images`
+| `all-files`  | (Default) All currently supported files, includes `all-text` and `all-images`
 | `all-text`   | All currently supported text files: `Json`, `Toml`, `Md`, `Txt`
-| `all-images` | All currently supported image files: `Jpeg`, `Png`, `WebP`, `Avif`, `Tiff`
+| `all-images` | All currently supported image files: `Jpeg`, `Png`, `WebP`, `Avif`, `Tiff`, `Gif`, `Bmp`, `Exr`, `Ff`, `Hdr`, `Ico`, `Pnm`, `Qoi`, `Tga`
 | `serde`      | `Serde` integration, adds `save_model` and `load_model` for `Json` and `Toml`
 | `image`      | `Image` integration, adds `save_image` and `load_image` to all image formats, and `save_image_custom` to formats where `image` supports custom quality
+| `image-nasm` | Turns on `nasm` feature of `image`
 | `async`      | Add async versions of all methods. Uses minimal `tokio` for fs. Adds `save_image_custom_async_offload` to offload image encoding
+| `rayon`      | (Default) Turns on all of `rayon` features in crates that support it.
 
 All files have their separate features. It is recommended to turn off default features and add only formats you use, if you wish to publish.
-
-> [!NOTE]
-> In beta, adding new file formats is a bit bothersome

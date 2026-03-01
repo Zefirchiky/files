@@ -105,7 +105,7 @@ macro_rules! define_file_types {
         impl $name {
             pub fn from_ext(path: impl AsRef<Path>) -> Self {
                 let path_ref = path.as_ref();
-                
+                #[allow(unused_variables)]
                 if let Some(ext) = path_ref.extension().and_then(|s| s.to_str()) {
                     $(
                         $(#[cfg($meta)])?
